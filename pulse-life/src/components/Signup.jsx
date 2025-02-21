@@ -29,35 +29,40 @@ function Signup() {
 
   const handleSubmit = async (values, actions) => {
     try {
-      // Add a slight delay for the loading animation
+      // Optional delay for loading animation visibility
       await new Promise((resolve) => setTimeout(resolve, 1500));
 
-      const updatedValues = sanitizeFormData(values); // sanitizeFormData will remove any occurrence of whitespaces from all form values
+      const updatedValues = sanitizeFormData(values);
 
-      // Submit data to your API
+      // Format data as expected by FastAPI with URLSearchParams
+      const formData = new URLSearchParams();
+      formData.append("username", updatedValues.username);
+      formData.append("password", updatedValues.password);
+      // Optionally include email if your backend supports it:
+      // formData.append("email", updatedValues.email);
+
+      // Call the backend signup endpoint
       const response = await axios.post(
-        "http://127.0.0.1:8000/auth/create/",
-        updatedValues,
+        "http://127.0.0.1:8000/signup",
+        formData.toString(),
         {
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
           withCredentials: true,
         }
-      ); // Replace '/api/signup' with your actual API endpoint
+      );
       console.log("Response: ", response.data);
 
-      // Show success toast
       toast.success("Account created successfully!");
 
-      // Reset form and navigate to the home page
       actions.resetForm();
       navigate("/login");
     } catch (error) {
-      console.error("Signup error: ", error.response.data.username[0]);
+      console.error("Signup error: ", error.response?.data?.detail || error);
       const errorMessage =
-        error.response.data.username[0] || "Signup failed. Please try again.";
+        error.response?.data?.detail || "Signup failed. Please try again.";
       toast.error(errorMessage);
     } finally {
-      actions.setSubmitting(false); // Stop the loading animation
+      actions.setSubmitting(false);
     }
   };
 
@@ -92,13 +97,15 @@ function Signup() {
               showPassword={showPassword}
             />
 
-            {/* Display server error message */}
             <div className="text-red-500 text-sm font-semibold">
               <ErrorMessage name="server" />
             </div>
 
-            {/* Signup Button with Green Background */}
-            <AuthButton className="bg-green-600 text-white py-2 px-4 rounded-md" action="Creating account..." disabled={isSubmitting}>
+            <AuthButton
+              className="bg-green-600 text-white py-2 px-4 rounded-md"
+              action="Creating account..."
+              disabled={isSubmitting}
+            >
               Create account
             </AuthButton>
 

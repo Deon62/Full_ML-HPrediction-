@@ -2,9 +2,11 @@ import React, { useState } from "react";
 import { NavLink, Link } from "react-router-dom";
 import ThemeToggle from "./ThemeToggle";
 import logo from "../assets/images/logo.png";
+import { useAuth } from "./AuthProvider";
 
 const Navbar = () => {
   const [isMenuOpen, setMenuOpen] = useState(false);
+  const { user } = useAuth() || {};
 
   return (
     <nav className="bg-gray-100 dark:bg-night-100 shadow-md py-4 font-sans fixed top-0 left-0 right-0 z-50">
@@ -74,6 +76,15 @@ const Navbar = () => {
               
             </span>
           </div>
+          {/* Conditionally show Admin button if the user is an admin */}
+          {user && user.is_admin && (
+            <Link
+              to="/admin"
+              className="px-3 py-2 border border-green-600 text-green-600 rounded hover:bg-green-600 hover:text-white"
+            >
+              Admin Dashboard
+            </Link>
+          )}
         </div>
 
         {/* Mobile Menu Button */}
@@ -196,6 +207,15 @@ const Navbar = () => {
                 
               </span>
             </div>
+            {/* Conditionally show Admin button if the user is an admin */}
+            {user && user.is_admin && (
+              <Link
+                to="/admin"
+                className="px-3 py-2 border border-green-600 text-green-600 rounded hover:bg-green-600 hover:text-white"
+              >
+                Admin Dashboard
+              </Link>
+            )}
           </div>
         </div>
       )}

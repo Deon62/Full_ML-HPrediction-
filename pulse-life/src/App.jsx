@@ -10,6 +10,7 @@ import Signup from "./components/Signup";
 import Exercise from "./components/Exercise"; // ✅ Import Exercise.jsx
 import Healthy from "./components/Healthy"; // ✅ Import Healthy.jsx
 import Pulse from "./components/Pulse"; // ✅ Import Pulse.jsx
+import AdminDashboard from "./components/AdminDashboard";
 
 const App = () => {
   return (
@@ -26,6 +27,7 @@ const App = () => {
           <Route path="/exercise" element={<Exercise />} /> 
           <Route path="/healthy" element={<Healthy />} /> 
           <Route path="/pulse" element={<Pulse />} /> 
+          <Route path="/admin" element={<AdminDashboard />} />
         </Routes>
       </Layout>
     </Router>

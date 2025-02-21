@@ -16,6 +16,7 @@ function AuthProvider({ children }) {
 
 export default AuthProvider;
 
-export const useToken = () => {
+// Export the hook as useAuth
+export const useAuth = () => {
   return useContext(authContext);
 };

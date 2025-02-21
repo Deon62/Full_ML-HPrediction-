@@ -1,0 +1,13 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../Heart/notebooks"
+		}
+	],
+	"settings": {
+		"liveServer.settings.multiRootWorkspaceName": "Model"
+	}
+}

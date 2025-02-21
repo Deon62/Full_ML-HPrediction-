@@ -1,7 +1,6 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useState } from "react";
 import { Formik, Form } from "formik";
-import { useToken } from "./AuthProvider";
 import Input from "./common/Input";
 import PasswordInput from "./common/PasswordInput";
 import AuthButton from "./common/AuthButton";
@@ -25,47 +24,48 @@ const schema = Yup.object({
 
 function Login() {
   const [showPassword, setShowPassword] = useState(false);
-  const { setToken } = useToken();
   const navigate = useNavigate();
   const { state } = useLocation();
-
   const path = state?.redirectTo || "/";
 
   const handleSubmit = async (values, actions) => {
     actions.setSubmitting(true);
     try {
-      // Add a slight delay for the loading animation to be visible
-      await new Promise((resolve) => setTimeout(resolve, 1500)); // Adjust the delay as needed
+      // Delay for loading animation visibility
+      await new Promise((resolve) => setTimeout(resolve, 1500));
 
-      const updatedValues = sanitizeFormData(values); // sanitizeFormData will remove any occurrence of whitespaces from all form values
+      const updatedValues = sanitizeFormData(values);
 
-      // Make the API call to your backend for authentication
+      // Format data as expected by FastAPI with URLSearchParams
+      const formData = new URLSearchParams();
+      formData.append("username", updatedValues.username);
+      formData.append("password", updatedValues.password);
+
+      // Call the backend login endpoint
       const response = await axios.post(
-        "http://127.0.0.1:8000/auth/login/", // Replace with your actual backend URL
-        updatedValues,
-        { withCredentials: true } // Send cookies with the request (useful for JWT sessions)
+        "http://127.0.0.1:8000/token",
+        formData.toString(),
+        {
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          withCredentials: true,
+        }
       );
 
-      // set access token to AuthProvider context
-      setToken(response.data.access);
+      // Save the token directly to localStorage
+      localStorage.setItem("token", response.data.access_token);
 
       toast.success("Login successful!");
 
-      // Reset the form and navigate
       actions.resetForm();
-      navigate(path); // Redirect to the previous page or home page
+      navigate(path);
     } catch (error) {
       console.error("Login error:", error);
-
-      // Display an error message from the server or a default message
       const errorMessage =
         error.response?.data?.detail || "Login failed. Please try again.";
       toast.error(errorMessage);
-
-      // Set form errors for display
       actions.setErrors({ server: errorMessage });
     } finally {
-      actions.setSubmitting(false); // Stop the loading animation
+      actions.setSubmitting(false);
     }
   };
 
@@ -82,7 +82,7 @@ function Login() {
           <h2 className="text-xl sm:text-3xl text-green-600 font-bold uppercase">
             Welcome Back
           </h2>
-
+          
           {/* Username input */}
           <Input
             type="text"
@@ -107,8 +107,10 @@ function Login() {
             Forgot Password?
           </Link>
 
-          {/* Log in Button with Green Background */}
-          <AuthButton className="bg-red-600 text-black py-2 px-4 rounded-md" action="logging in...">
+          <AuthButton
+            className="bg-red-600 text-black py-2 px-4 rounded-md"
+            action="logging in..."
+          >
             Log in
           </AuthButton>
 
