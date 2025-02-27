@@ -14,6 +14,10 @@ from typing import Optional
 import joblib
 import numpy as np
 
+# Additional imports for chatbot endpoint
+from google import genai
+from google.genai import types
+
 # Calculate the base directory for the model files.
 # This navigates two levels up from the backend folder to Desktop,
 # then goes into the Model/Model folder.
@@ -110,6 +114,37 @@ async def predict(data: dict):
             "probability": float(probability),
             "status": "success"
         }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/chatbot-response")
+async def chatbot_response(user_input: str):
+    try:
+        client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"))
+        model = "gemini-2.0-flash"
+        contents = [
+            types.Content(role="user", parts=[types.Part.from_text(text=user_input)]),
+            types.Content(role="model", parts=[types.Part.from_text(text="Hi there! I'm excited to be your heart health instructor. I'm here to help you understand more about keeping your heart healthy. To get started, what are you most interested in learning about today? For example, are you curious about: * Understanding Heart Disease: What it is, the different types, and risk factors? * Healthy Eating for Your Heart: What foods to eat, and what to limit? * Exercise and Physical Activity: How much do you need, and what kind is best? * Managing Stress: Techniques to reduce stress and its impact on your heart. * Understanding Your Numbers: What do blood pressure, cholesterol, and blood sugar mean? * Making Lifestyle Changes: How to make small, sustainable changes for better heart health? Just let me know what's on your mind, and we'll go from there! I'm here to provide information, answer your questions, and help you develop a personalized plan for a healthier heart.")]),
+            types.Content(role="user", parts=[types.Part.from_text(text="INSERT_INPUT_HERE")]),
+        ]
+        generate_content_config = types.GenerateContentConfig(
+            temperature=1,
+            top_p=0.95,
+            top_k=40,
+            max_output_tokens=8192,
+            response_mime_type="text/plain",
+            system_instruction=[types.Part.from_text(text="heart health instructor")],
+        )
+
+        response_text = ""
+        for chunk in client.models.generate_content_stream(
+            model=model,
+            contents=contents,
+            config=generate_content_config,
+        ):
+            response_text += chunk.text
+
+        return {"response": response_text}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

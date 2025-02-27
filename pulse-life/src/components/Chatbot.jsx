@@ -2,25 +2,30 @@ import { useState } from "react";
 import PropTypes from "prop-types";
 import { IoClose } from "react-icons/io5";
 import { BsFillSendFill } from "react-icons/bs";
+import axios from "axios";
 
 const Chatbot = ({ isVisible, toggleVisibility }) => {
   const [messages, setMessages] = useState([]); // State for storing messages
   const [input, setInput] = useState(""); // State for input field
   const [showReasoning, setShowReasoning] = useState(null); // State for showing reasoning
 
-  const handleSendMessage = () => {
+  const handleSendMessage = async () => {
     if (input.trim()) {
       // User message
       const userMessage = { text: input, isUser: true };
       setMessages((prevMessages) => [...prevMessages, userMessage]);
 
-      // Simulated bot response
-      const botResponse = {
-        text: "Hello! How can I help you today?",
-        reasoning: "The user greeted me, so I responded with a friendly acknowledgment.",
-        isUser: false,
-      };
-      setMessages((prevMessages) => [...prevMessages, botResponse]);
+      try {
+        const response = await axios.post("/api/chatbot", { message: input });
+        const botResponse = {
+          text: response.data.text,
+          reasoning: response.data.reasoning,
+          isUser: false,
+        };
+        setMessages((prevMessages) => [...prevMessages, botResponse]);
+      } catch (error) {
+        console.error("Error sending message:", error);
+      }
 
       setInput(""); // Clear input field
     }
